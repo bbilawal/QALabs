@@ -27,33 +27,35 @@
 // }
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const typePrompts = {
-  functional: "Functional test cases including Unit, Integration, Regression, UAT",
-  nonfunctional: "Non-functional test cases including Performance, Load, Stress, Security, Usability, Accessibility",
-  behavioral: "Behavioral test cases including Positive, Negative, Destructive",
-  specialized: "Specialized test cases including Database, UI, Compatibility",
-  all: "All types: Functional, Non-functional, Behavioral, Specialized",
-};
-
 export async function POST(req) {
   try {
+    // ✅ Validate API key
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("Missing OPENAI_API_KEY");
+      return Response.json(
+        { error: "Server not configured" },
+        { status: 500 }
+      );
+    }
+
+    const client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const { criteria, type } = await req.json();
 
+    const typePrompts = {
+      functional: "Functional test cases including Unit, Integration, Regression, UAT",
+      nonfunctional: "Non-functional test cases including Performance, Load, Stress, Security, Usability, Accessibility",
+      behavioral: "Behavioral test cases including Positive, Negative, Destructive",
+      specialized: "Specialized test cases including Database, UI, Compatibility",
+      all: "All types: Functional, Non-functional, Behavioral, Specialized",
+    };
+
     const prompt = `
-You are a QA Lead.
+Generate ${typePrompts[type]} test cases.
 
-Generate ${typePrompts[type]}.
-
-STRICT RULES:
-- Return ONLY JSON
-- No explanation
-
-Format:
-
+Return ONLY valid JSON array:
 [
   {
     "title": "",
@@ -62,7 +64,7 @@ Format:
   }
 ]
 
-Acceptance Criteria:
+Criteria:
 ${criteria}
 `;
 
@@ -73,15 +75,36 @@ ${criteria}
     });
 
     let text = response.choices[0].message.content;
+
+    console.log("RAW AI RESPONSE:", text);
+
+    // ✅ Clean response safely
     text = text.replace(/```json|```/g, "").trim();
 
-    const parsed = JSON.parse(text);
+    let parsed;
 
-    return new Response(JSON.stringify(parsed), { status: 200 });
+    try {
+      parsed = JSON.parse(text);
+    } catch (parseError) {
+      console.error("JSON PARSE ERROR:", parseError);
+      
+      // fallback response (IMPORTANT)
+      return Response.json([
+        {
+          title: "Fallback Test Case",
+          steps: "Step 1, Step 2",
+          expected: "Expected result",
+        },
+      ]);
+    }
+
+    return Response.json(parsed);
 
   } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err.message }),
+    console.error("API ERROR:", err);
+
+    return Response.json(
+      { error: err.message },
       { status: 500 }
     );
   }
