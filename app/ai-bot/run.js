@@ -1,5 +1,5 @@
 // ai-bot/run.js
-const url = process.argv[2];
+
 
 console.log("🔍 Crawling:", url);
 
@@ -35,7 +35,7 @@ export async function crawlSite(startUrl, callback) {
 }
 
 // Example AI Test Case generator
-function generateTestCases(pages) {
+async function generateTestCases(pages) {
   return pages.flatMap((p) => [
     {
       page: p,
@@ -65,8 +65,8 @@ function generateTestCases(pages) {
   ]);
 }
 
-const pages = crawlSite(url);
-const testCases = generateTestCases(pages);
+const pages = await crawlSite(url);
+const testCases = await generateTestCases(pages);
 
 console.log("\n✅ Generated Test Cases:\n");
 testCases.forEach((tc) => console.log("- " + tc));

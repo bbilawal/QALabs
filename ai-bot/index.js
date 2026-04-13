@@ -72,7 +72,7 @@ async function crawlSite(url, onProgress = () => {}) {
   await browser.close();
 }
 
-function generateTestCases(pages) {
+async function generateTestCases(pages) {
   return pages.flatMap((p) => [
     // STATIC
     { page: p, type: "Static", category: "SEO", testCase: `Verify meta tags, title, headings, alt attributes on ${p}` },

@@ -1,4 +1,4 @@
-export function generateStructuredTestCases(criteriaText) {
+export async function generateStructuredTestCases(criteriaText) {
   const lines = criteriaText.split("\n");
 
   let scenario = "";
@@ -69,5 +69,3 @@ export function generateStructuredTestCases(criteriaText) {
     "edgeCases.spec": edge,
   };
 }
-
-module.exports = { generateStructuredTestCases };
