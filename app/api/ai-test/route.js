@@ -1,6 +1,6 @@
 import { runAITest } from "../../../ai-bot/index.js";
 
-let crawlProgress = {}; // in-memory store
+let crawlProgress = {};
 
 // ▶ START TEST
 export async function POST(req) {
@@ -11,7 +11,6 @@ export async function POST(req) {
       throw new Error("URL and sessionId are required");
     }
 
-    // ✅ Initialize session (KEEP STRUCTURE ALWAYS)
     crawlProgress[sessionId] = {
       pages: [],
       progress: "Starting crawl...",
@@ -23,31 +22,26 @@ export async function POST(req) {
       status: "running",
     };
 
-    // ✅ Run AI Test (same logic preserved)
-  const result = await runAITest(
-  url,
+    const result = await runAITest(
+      url,
+      // progress callback
+      (page) => {
+        crawlProgress[sessionId].progress = `Crawled: ${page}`;
+        crawlProgress[sessionId].pages.push(page);
+      },
+      // partial updates
+      (partial) => {
+        crawlProgress[sessionId].result = partial;
+      }
+    );
 
-  // progress callback
-  (page) => {
-    crawlProgress[sessionId].progress = `Crawled: ${page}`;
-    crawlProgress[sessionId].pages.push(page);
-  },
-
-  // ✅ partial callback (THIS FIXES YOUR FEATURE)
-  (partial) => {
-    crawlProgress[sessionId].result = partial;
-  }
-);
-
-    // ✅ Only overwrite if NOT stopped
     if (crawlProgress[sessionId].status !== "stopped") {
       crawlProgress[sessionId].progress = "Crawl completed!";
-      crawlProgress[sessionId].result = result || crawlProgress[sessionId].result;
+      crawlProgress[sessionId].result = result;
       crawlProgress[sessionId].status = "completed";
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
-
   } catch (err) {
     return new Response(
       JSON.stringify({ error: err.message }),
@@ -56,7 +50,7 @@ export async function POST(req) {
   }
 }
 
-// ⏳ GET PROGRESS
+// ⏳ GET
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get("sessionId");
@@ -74,7 +68,7 @@ export async function GET(req) {
   );
 }
 
-// ⛔ STOP TEST
+// ⛔ STOP
 export async function PUT(req) {
   try {
     const { sessionId } = await req.json();
@@ -83,7 +77,6 @@ export async function PUT(req) {
       throw new Error("Invalid sessionId");
     }
 
-    // ✅ Mark stopped
     crawlProgress[sessionId].status = "stopped";
     crawlProgress[sessionId].progress = "⛔ Test stopped by user";
 
@@ -91,16 +84,10 @@ export async function PUT(req) {
       JSON.stringify({
         success: true,
         pages: crawlProgress[sessionId].pages,
-        result:
-          crawlProgress[sessionId].result || {
-            errors: [],
-            testCases: [],
-            screenshots: [],
-          },
+        result: crawlProgress[sessionId].result,
       }),
       { status: 200 }
     );
-
   } catch (err) {
     return new Response(
       JSON.stringify({ error: err.message }),

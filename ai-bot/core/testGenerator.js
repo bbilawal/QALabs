@@ -1,8 +1,13 @@
-async function toPlaywright(test) {
+export function toPlaywright(test) {
   return `
+import { test, expect } from '@playwright/test';
+
 test("${test.scenario}", async ({ page }) => {
-  ${test.steps.map((s) => `// ${s}`).join("\n")}
-  // Expect: ${test.expected}
+  await page.goto("${test.page}");
+
+  ${test.steps.map((s) => `await ${s};`).join("\n")}
+
+  await expect(page).toHaveURL("${test.expected}");
 });
 `;
 }

@@ -286,30 +286,56 @@ export default function AIDashboard() {
             )}
           </div>
 
-          {/* SCREENSHOTS */}
-          <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-            <h2 className="text-lg font-semibold mb-3">
-              Screenshots
-            </h2>
+         {/* SCREENSHOTS */}
+<div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
+  <h2 className="text-lg font-semibold mb-3">
+    Screenshots
+  </h2>
 
-            {result.screenshots?.length ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {result.screenshots.map((s, i) => (
-                  <div key={i} className="rounded-xl overflow-hidden border border-white/10">
-                    <p className="bg-black/60 text-xs p-2 truncate">
-                      {s.page}
-                    </p>
-                    <img
-                      src={`data:image/png;base64,${s.image}`}
-                      alt={s.page}
-                    />
-                  </div>
-                ))}
-              </div>
+  {result.screenshots?.length ? (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {result.screenshots.map((s, i) => {
+        // ✅ Validate base64
+        const isValid =
+          s?.image && typeof s.image === "string" && s.image.length > 1000;
+
+        const src = isValid
+          ? `data:image/png;base64,${s.image}`
+          : null;
+
+        return (
+          <div
+            key={i}
+            className="rounded-xl overflow-hidden border border-white/10 bg-black/40"
+          >
+            <p className="bg-black/60 text-xs p-2 truncate text-gray-300">
+              {s.page}
+            </p>
+
+            {isValid ? (
+              <img
+                src={src}
+                alt={s.page}
+                className="w-full h-48 object-cover"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "https://via.placeholder.com/400x200?text=Image+Error";
+                }}
+              />
             ) : (
-              <p className="text-gray-400">No screenshots available</p>
+              <div className="h-48 flex items-center justify-center text-xs text-red-400">
+                ❌ Invalid Screenshot Data
+              </div>
             )}
           </div>
+        );
+      })}
+    </div>
+  ) : (
+    <p className="text-gray-400">No screenshots available</p>
+  )}
+</div>
 
           {/* TEST CASES */}
           <div className="bg-blue-900/40 border border-blue-500 p-6 rounded-2xl">
