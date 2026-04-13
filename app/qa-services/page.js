@@ -18,32 +18,41 @@ export default function QAServices() {
   ];
 
   const generateTests = async (type) => {
-    if (!criteria.trim()) return;
+  if (!criteria.trim()) return;
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const res = await fetch("/api/qa-services", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ criteria, type }),
-      });
+  try {
+    const res = await fetch("/api/qa-services", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ criteria, type }),
+    });
 
-      const data = await res.json();
-
-      setResults((prev) => ({
-        ...prev,
-        [type]: data,
-      }));
-
-    } catch (err) {
-      alert("Error generating test cases");
-    } finally {
-      setLoading(false);
+    // ✅ IMPORTANT FIX
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("API ERROR:", errorText);
+      alert("API failed: " + errorText);
+      return;
     }
-  };
+
+    const data = await res.json();
+
+    setResults((prev) => ({
+      ...prev,
+      [type]: data,
+    }));
+
+  } catch (err) {
+    console.error("Frontend error:", err);
+    alert("Error generating test cases");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const generateAll = async () => {
     for (let t of testTypes) {
