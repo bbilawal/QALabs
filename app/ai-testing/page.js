@@ -6,6 +6,9 @@ import { v4 as uuidv4 } from "uuid";
 import TextField from "@/components/TextField";
 import Header from "@/components/Header";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+
 export default function AIDashboard() {
   const router = useRouter();
 
@@ -19,6 +22,8 @@ export default function AIDashboard() {
 
   const sessionIdRef = useRef(uuidv4());
   const pollRef = useRef(null);
+  global.sessions = global.sessions || {};
+const sessions = global.sessions;
 
   const canDownload = !!result || pages.length > 0;
 
@@ -34,15 +39,18 @@ export default function AIDashboard() {
       setProgress("⛔ Stopping test...");
 
       try {
-        const res = await fetch("/api/ai-test", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: sessionIdRef.current,
-          }),
-        });
+       const res = await fetch(`/api/ai-test?sessionId=${sessionId}`, {
+  cache: "no-store",
+});
 
-        const data = await res.json();
+if (!res.ok) {
+  console.error("API ERROR:", res.status);
+  setProgress("❌ API failed");
+  return;
+};
+
+    const data = await res.json();
+console.log("POLL DATA:", data);
 
         const newPages = data.pages || [];
         setPages(newPages);
