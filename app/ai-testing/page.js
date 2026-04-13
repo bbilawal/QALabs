@@ -50,7 +50,7 @@ export default function AIDashboard() {
         setResult({
           pages: data.result?.pages || newPages,
           errors: data.result?.errors || [],
-          screenshots: data.result?.screenshots || [],
+          // screenshots: data.result?.screenshots || [],
           testCases: data.result?.testCases || [],
         });
 
@@ -97,7 +97,7 @@ export default function AIDashboard() {
           setResult({
             pages: data.result?.pages || newPages,
             errors: data.result?.errors || [],
-            screenshots: data.result?.screenshots || [],
+            // screenshots: data.result?.screenshots || [],
             testCases: enhancedTestCases,
           });
         }
@@ -255,10 +255,7 @@ export default function AIDashboard() {
                 <p className="text-gray-400 text-sm">Errors</p>
               </div>
 
-              <div className="bg-black/40 p-4 rounded-xl">
-                <p className="text-2xl font-bold">{result.screenshots?.length}</p>
-                <p className="text-gray-400 text-sm">Screenshots</p>
-              </div>
+            
 
               <div className="bg-black/40 p-4 rounded-xl">
                 <p className="text-2xl font-bold">{result.testCases?.length}</p>
@@ -287,7 +284,7 @@ export default function AIDashboard() {
           </div>
 
          {/* SCREENSHOTS */}
-<div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
+{/* <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
   <h2 className="text-lg font-semibold mb-3">
     Screenshots
   </h2>
@@ -335,7 +332,7 @@ export default function AIDashboard() {
   ) : (
     <p className="text-gray-400">No screenshots available</p>
   )}
-</div>
+</div> */}
 
           {/* TEST CASES */}
           <div className="bg-blue-900/40 border border-blue-500 p-6 rounded-2xl">
